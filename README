@@ -1,0 +1,3 @@
+MLE+ is a Matlab-EnergyPlus Interface for Matlab.
+It allows you to start and stop EnergyPlus from Matlab as well as to run simulations and exchange data between the two programs.
+
