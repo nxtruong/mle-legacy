@@ -1,0 +1,386 @@
+#+TITLE:    MLE+ Manual
+#+AUTHOR:    Truong Nghiem
+#+EMAIL:     nghiem@seas.upenn.edu
+#+DESCRIPTION: MLE+ Manual
+#+KEYWORDS:  energyplus,matlab,simulink,simulation
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   timestamp:nil creator:nil author:t
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT: 
+#+STYLE: <style type="text/css"><!--/*--><![CDATA[/*><!--*/
+#+STYLE:  .subtitle  { text-align: center; font-style:italic; font-weight:normal; font-size:100%; margin:0; }
+#+STYLE: /*]]>*/--></style>
+#+MACRO: EP EnergyPlus
+#+MACRO: funcname /$1/
+
+#+BEGIN_HTML
+<h2 class="subtitle">Version: 1.0</h2>
+<h2 class="subtitle">Truong Nghiem</h2>
+#+END_HTML
+
+* Changes
+
+** DD-MM-YYYY
+- Thanks abc and def.
+
+* Introduction
+
+MLE+ is a Matlab toolbox for co-simulation with the whole-building
+energy simulator [[http://apps1.eere.energy.gov/buildings/energyplus/][EnergyPlus]].  It is designed for engineers and
+researchers who are familiar with Matlab and Simulink and who want to
+use these software tools in building energy simulation.  MLE+ is
+particularly useful for:
+- Controller design: the energy simulation is carried out by
+  {{{EP}}} while the controller is designed and implemented in
+  Matlab or Simulink.
+- Data acquisition: a large number of simulations, with different
+  scenarios, can be carried out and their execution data is read,
+  stored and processed in Matlab.  The data can then be used for
+  learning about the building system, e.g. for training a regression
+  model or a neural network model.
+- Simulation-based optimization: a non-linear optimizer, e.g. one in
+  the Matlab's Global Optimization Toolbox, can be used to find
+  optimal (or sub-optimal) parameters or control sequences of the
+  building system, by considering the building as a black-box whose
+  execution is performed by simulations by {{{EP}}}.
+
+MLE+ toolbox provides a set of Matlab functions and classes, as well
+as a Simulink library, for performing co-simulation with {{{EP}}}.
+
+** Comparison with BCVTB
+
+[[https://gaia.lbl.gov/bcvtb][BCVTB]] (Building Controls Virtual Test Bed) is a software environment
+for coupling different simulation programs for distributed simulation.
+As an example, BCVTB allows simulating a building and HVAC system in
+{{{EP}}} and the control logic in Matlab/Simulink, while exchanging
+data between the software as they simulate.  BCVTB is based on the
+Ptolemy II software environment and is developed at the Lawrence
+Berkeley National Laboratory.
+
+The co-simulation feature in {{{EP}}} was originally developed for
+BCVTB, however the communication protocol is open and can be used by
+any program to perform co-simulation with {{{EP}}}.  MLE+ is an
+example of such programs.
+
+Although Matlab/Simulink can be coupled with {{{EP}}} via BCVTB, its
+full functionality cannot be used because it is only called by BCVTB
+as a client.  Interactive execution and debugging Matlab code are not
+possible.  Furthermore, for those who mostly work with Matlab/Simulink
+and have never used Ptolemy, learning a new environment as Ptolemy
+might not be worthwhile.
+
+Advantages of BCVTB over MLE+ include:
+- It is always up-to-date with the co-simulation feature in {{{EP}}}.
+- It can be used to couple other programs besides {{{EP}}} and
+  Matlab/Simulink, such as Modelica and Radiance.
+- It is free, open-source and runs on Java.  Note that MLE+ is also
+  free and open-source, but it requires Matlab/Simulink which are
+  commercial.
+
+Advantages of MLE+ over BCVTB include:
+- It takes full advantage of the Matlab/Simulink environment,
+  including interactive simulation, debugging, and all 
+  available toolboxes.  In other words, it integrates better
+  with the Matlab/Simulink environment.
+- It is familiar to those who mainly use Matlab/Simulink and do not
+  want to learn another simulation program.
+
+
+* Installation
+** System Requirements
+
+- MLE+ requires Matlab and/or Simulink of recent versions.  It has
+  been tested in Matlab R2009b.  It should work in other recent
+  versions of Matlab, but it has not been tested.
+- Java must be enabled in Matlab.  Java socket library is used by MLE+
+  for communication with {{{EP}}}.
+- [[http://apps1.eere.energy.gov/buildings/energyplus/][{{{EP}}}]] version 6.0.0.  MLE+ should work well with {{{EP}}} 5.0,
+  however it has not been tested thoroughly.
+- [[https://gaia.lbl.gov/bcvtb][BCVTB]].  MLE+ does not require BCVTB to run, however {{{EP}}}
+  requires that BCVTB exists in the system.
+
+** Install MLE+
+
+After all [[*System Requirements][system requirements]] of MLE+ are satisfied, installation of
+MLE+ is simple.
+- First, download the compressed MLE+ distribution package and extract
+  it to a directory.  Let us call this directory <MLEPDir>.
+- Start Matlab and add <MLEPDir> to the search path, either by the GUI
+  or by the following command: =addpath(<MLEPDir>)=.
+- It is recommended to save the search path.
+
+* MLE+ Usage
+
+MLE+ provides:
+- A set of Matlab functions and classes for co-simulation with
+  {{{EP}}} from Matlab code.  They all have prefix /mlep/.
+- A library of Simulink blocks for co-simulation with {{{EP}}} from
+  Simulink models.
+- Several utility functions.  They all have prefix /mlep/.
+
+** General configuration for co-simulation with {{{EP}}}
+
+In order to perform co-simulation with {{{EP}}}, certain configurations
+need to be done: the IDF model file may need to be instrumented to
+allow importing and exporting variables from and to external programs,
+and a configuration file named /variables.cfg/ needs to be created to
+specify these input and output variables.  For more details, refer to
+the BCVTB manual[fn::
+http://simulationresearch.lbl.gov/bcvtb/releases/1.0.0/doc/manual/tit-EnePluCon.xhtml]
+or the External Interface manual of {{{EP}}}.
+
+** Configuration for co-simulation with {{{EP}}} in Windows
+
+/TO DO/
+
+** Configuration for co-simulation with {{{EP}}} in Unix-based OS (Linux, Mac OS)
+
+/TO DO/
+
+
+** The BCVTB protocol
+
+A special protocol is used to exchange data between co-simulation
+processes via sockets.  Each packet is a text string that contains a
+sequence of numbers of the following format
+#+BEGIN_HTML
+<div class="blockcontent"><pre>
+v f n<sub>r</sub> n<sub>i</sub> n<sub>b</sub> t r<sub>1</sub> r<sub>2</sub>&hellip;
+</pre></div>
+#+END_HTML
+#+BEGIN_LATEX
+\[ v\quad f\quad n_r\quad n_i\quad n_b\quad t\quad r_1\quad r_2 \dots \]
+#+END_LATEX
+where:
+- v is the version number (currently versions 1 and 2 are
+  supported).
+- f is a flag: 0 if normal, 1 if simulation stopped, negative if
+  error.
+- n_{r}, n_{i}, n_{b} are the numbers of real variables, integer
+  variables, and Boolean variables respectively.  Currently, {{{EP}}}
+  requires that n_{i}=0 and n_{b}=0.
+- t is the current simulation time in seconds.
+- r_{1}, r_{2}... are the values of the variables, starting with real
+  ones, then integer ones, and finally Boolean ones.
+
+For more details, refer to the BCVTB manual[fn::http://simulationresearch.lbl.gov/bcvtb/releases/1.0.0/doc/manual/ch06s11.xhtml].
+
+** Matlab functions and classes
+
+Matlab functions in MLE+ can be classified into three groups:
+- Start and stop co-simulation with {{{EP}}}.
+- Send and receive data packets to and from {{{EP}}}.
+- Encode and decode data packets.
+
+This section only summarizes the functions and classes provided by
+MLE+.  Detailed information should be found by reading the help
+text of the functions.
+
+*** Start and stop co-simulation
+
+- To start a new co-simulation session, use the function
+  {{{funcname(mlepCreate)}}}.  Arguments include the path to the
+  {{{EP}}} executable, its command-line arguments, the BCVTB
+  directory, and the host and port number for the communication
+  socket.  This function returns the status and the sockets created
+  for communication.
+- When the co-simulation terminates, the communication sockets must be
+  closed by the function {{{funcname(mlepClose)}}}.  Its arguments are
+  the sockets returned by {{{funcname(mlepCreate)}}}.
+
+
+*** Send and receive data packets
+
+- To read a packet from the other program, use the function
+  {{{funcname(mlepReadData)}}}.  It returns the packet as a text
+  string.
+- To send a packet to the other program, use the function
+  {{{funcname(mlepWriteData)}}}.  The packet must be a text
+  string.
+- Function {{{funcname(mlepExchangeData)}}} can be used to send a
+  packet to then immediately read a packet from the other program.
+
+
+*** Encode and decode data packets
+
+- To decode a packet, received from the other program as a text
+  string, use the function {{{funcname(mlepDecodePacket)}}}.  It
+  returns the flag, the simulation time, and the values as vectors.
+- To encode a data packet, use the function
+  {{{funcname(mlepEncodeData)}}}.  Function
+  {{{funcname(mlepEncodeRealData)}}} can be used if only real values
+  will be sent.  Function {{{funcname(mlepEncodeStatus)}}} is used if
+  no values will be sent but the flag (e.g. to end a
+  co-simulation session with flag 1, or to report an error with
+  negative flags).
+
+*** The {{{funcname(mlepProcess)}}} class
+
+The {{{funcname(mlepProcess)}}} class wraps the above functions in an
+easy-to-use interface.  Using this class for co-simulation is highly
+recommended.
+
+The properties of {{{funcname(mlepProcess)}}} are (RW =
+read/write, RO = read-only):
+- {{{funcname(version)}}} (RW, number): version number of the
+  communication protocol (e.g. 2).
+- {{{funcname(program)}}} (RW, string): path to the co-simulation
+  program (e.g. path to {{{EP}}}).
+- {{{funcname(arguments)}}} (RW, string): command-line arguments to
+  the co-simulation program.
+- {{{funcname(workDir)}}} (RW, string): working directory (default is
+  the current directory).
+- {{{funcname(port)}}} (RW, number): communication socket port
+  (default is 0, which means any available port).
+- {{{funcname(host)}}} (RW, string): communication socket host
+  (default is empty, which means the local host).
+- {{{funcname(bcvtbDir)}}} (RW, string): path to the directory of
+  BCVTB.
+- {{{funcname(configFile)}}} (RW, string): name of the socket
+  configuration file.  It must be "socket.cfg" for {{{EP}}}.
+- {{{funcname(configFileWriteOnce)}}} (RW, bool): if true, the socket
+  configuration file will only be written for the first time and
+  whenever the server socket is changed.
+- {{{funcname(acceptTimeout)}}} (RW, number): the number of seconds to
+  wait for the co-simulation program to connect.
+- {{{funcname(isRunning)}}} (RO, bool): true if the co-simulation is
+  running.
+
+Following are the steps to use the {{{funcname(mlepProcess)}}} class
+for co-simulation:
+1. Create a new object of class {{{funcname(mlepProcess)}}} by the
+   command:
+   #+BEGIN_SRC matlab
+   ep = mlepProcess;
+   #+END_SRC
+   Assign appropriate properties of =ep=, particularly the program
+   path, the arguments, and the BCVTB path.
+2. Start a co-simulation session by the command:
+   #+BEGIN_SRC matlab
+   [status, msg] = ep.start;
+   #+END_SRC
+   Check that =status= is 0 to make sure that the co-simulation is
+   started successfully.
+3. Read packets using =ep.read= and write packets using =ep.write=.
+   Packets can be decoded and encoded by appropriate functions (see
+   section [[*Encode and decode data packets][Encode and decode data packets]]).  If a non-zero flag is
+   received, the simulation should be stopped.
+4. Stop the co-simulation session by the command:
+   #+BEGIN_SRC matlab
+   ep.stop;
+   #+END_SRC
+
+
+Note that {{{funcname(mlepProcess)}}} is a handle class, thus it is
+not necessary to re-assign the object whenever a method is called.
+
+
+** Utility functions
+
+- Function {{{funcname(mlepWriteEPModel)}}} reads a template text
+  file, replaces certain keywords in it with provided values, then
+  writes the content to an output text file.  The function can be used
+  to generate IDF model files from template files by replacing certain
+  parameters with specific values.
+
+** Simulink library
+   :PROPERTIES:
+   :ATTACH_DIR_INHERIT: t
+   :END:
+
+MLE+ provides a Simulink library to facilitate co-simulation with
+{{{EP}}} in Simulink.  Currently, the library contains only one block:
+the {{{funcname(E+ Cosimulation)}}} block (Figure \ref{fig:epblock}).  This
+block implements co-simulation with {{{EP}}} by allowing Simulink to
+exchange input and output data with it.
+#+CAPTION: {{{funcname(E+ Cosimulation)}}} Block.
+#+LABEL:   fig:epblock
+#+ATTR_LaTeX:
+#+ATTR_HTML: width="150"
+[[./graphics/epblock.png]]
+When the Simulink simulation starts, {{{EP}}} is also started and will run in
+parallel with Simulink.  They then exchange inputs and outputs via socket
+communication.  When the simulation terminates, {{{EP}}} will exit
+automatically.
+
+{{{funcname(E+ Cosimulation)}}} block has one input port and three
+output ports:
+- The input is the real vector input to {{{EP}}}.
+- The first output ({{{funcname(flag)}}}) is the status of {{{EP}}}.
+  It is 0 if everything is normal, 1 if {{{EP}}} has stopped its
+  simulation, and negative if there was an error.  Simulink should
+  stop the simulation as soon as this flag is non-zero.
+- The second output ({{{funcname(time)}}}) is the current simulation
+  time of {{{EP}}}, in seconds.
+- The last output ({{{funcname(real)}}}) is the real vector output
+  from {{{EP}}}.
+Currently, integer and Boolean inputs and outputs are not supported.
+
+Figure \ref{fig:simblock-dlg} shows the parameter dialog box of the
+{{{funcname(E+ Cosimulation)}}} block.  These parameters are similar
+to the arguments of the function {{{funcname(mlepCreate)}}} or the
+properties of the class {{{funcname(mlepProcess)}}}.  In addition, the
+number of real output variables must be specified (this is required by
+Simulink).
+#+CAPTION: Parameter dialog of {{{funcname(E+ Cosimulation)}}} Block.
+#+LABEL:   fig:simblock-dlg
+#+ATTR_LaTeX: width=.5\textwidth
+[[./graphics/slblockdlg.jpg]]
+
+{{{funcname(E+ Cosimulation)}}} is a discrete-time block, so either
+its time-step is set to a positive value or the Simulink model is
+discrete-time.
+
+* Examples
+
+MLE+ provides an example in which a building and HVAC model is
+simulated by {{{EP}}} and a controller implemented in Simulink
+computes zone temperature set-points.  This example is a
+reimplementation of a similar example in the BCVTB distribution.
+
+Figure \ref{fig:example-sl} illustrates a Simulink model that
+implements this control system and a plotting window showing the
+simulation results.  In the plot are the temperature set-points, the
+outdoor dry bulb temperature and the zone temperature for three days,
+with a 15-minute time-step.
+#+CAPTION: Simulink model simulation result.
+#+LABEL:   fig:example-sl
+#+ATTR_LaTeX: width=.9\textwidth
+#+ATTR_HTML: width="700"
+[[./graphics/simulink.jpg]]
+
+The same control system can be implemented in plain Matlab code
+instead of Simulink, using the {{{funcname(mlepProcess)}}} class.
+Figure \ref{fig:example-ml} shows the plots of simulation results
+computed by this Matlab script, which are the same as those in Figure
+\ref{fig:example-sl}.
+#+CAPTION: Matlab script simulation result.
+#+LABEL:   fig:example-ml
+#+ATTR_LaTeX: width=.9\textwidth
+[[./graphics/mlfigure.jpg]]
+
+All Matlab and Simulink example files are located in the sub-directory
+/examples/ of the MLE+ distribution.
+
+* License
+
+MLE+ is open-source software.  You are free to use it however you
+like.  You may redistribute it.  You may modify it to suit your need.
+
+If you redistribute MLE+ or derive your work from MLE+, you should
+give credit to the authors by including their names and/or a link to
+the website of MLE+.  You are encouraged to share any derivative work.
+
+*Disclaimer*: MLE+ IS DISTRIBUTED WITHOUT ANY WARRANTY.  THE AUTHORS
+MAKE NO EXPRESS OR IMPLIED WARRANTIES OR CONDITIONS INCLUDING, WITHOUT
+LIMITATION, THE WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A
+PARTICULAR PURPOSE WITH RESPECT TO THE SOFTWARE.  IN NO EVENT SHALL
+THE AUTHORS BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES CAUSED BY USING THE SOFTWARE.
+
