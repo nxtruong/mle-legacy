@@ -10,11 +10,12 @@ classdef mlepProcess < handle
     %   See also:
     %       <a href="https://gaia.lbl.gov/bcvtb">BCVTB (hyperlink)</a>
     %
-    % (C) 2010-2011 by Truong Nghiem (nghiem@seas.upenn.edu)
+    % (C) 2010-2014 by Truong Nghiem (nghiem@seas.upenn.edu)
 
-    % Last update: 2011-07-13 by Truong X. Nghiem
+    % Last update: 2014-05-06 by Truong X. Nghiem
     
     % HISTORY:
+    %   2014-05-06  Added asynchronous reading readAsync.
     %   2011-07-13  Added global settings and execution command selection.
     %   2011-04-28  Changed to use Java process for running E+.
     %   2010-11-23  Changed to protocol version 2.
@@ -117,8 +118,28 @@ classdef mlepProcess < handle
         end
         
         function packet = read(obj)
+            % Read (synchronously) a packet from E+
+            % It may fail if timeout is reached without input data.
             if obj.isRunning
                 packet = char(obj.reader.readLine);
+            else
+                error('Co-simulation is not running.');
+            end
+        end
+        
+        function [packet, success] = readAsync(obj)
+            % Read asynchronously a packet from E+
+            % The function always returns immediately.
+            % If there is no input data in the buffer, packet will be empty
+            % and success will be false; otherwise success will be true.
+            if obj.isRunning
+                if obj.reader.ready()
+                    packet = char(obj.reader.readLine);
+                    success = true;
+                else
+                    packet = '';
+                    success = false;
+                end
             else
                 error('Co-simulation is not running.');
             end
