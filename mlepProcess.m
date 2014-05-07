@@ -15,7 +15,8 @@ classdef mlepProcess < handle
     % Last update: 2014-05-06 by Truong X. Nghiem
     
     % HISTORY:
-    %   2014-05-06  Added asynchronous reading readAsync.
+    %   2014-05-06  Added asynchronous reading readAsync. Fixed bug that
+    %               doesn't set read/write timeout when starting.
     %   2011-07-13  Added global settings and execution command selection.
     %   2011-04-28  Changed to use Java process for running E+.
     %   2010-11-23  Changed to protocol version 2.
@@ -92,6 +93,8 @@ classdef mlepProcess < handle
             end
             
             if status == 0 && isjava(obj.commSocket)
+                obj.commSocket.setSoTimeout(obj.rwTimeout);  % set read/write timeout
+                
                 % Create writer and reader
                 obj.createStreams;
                 obj.isRunning = true;
