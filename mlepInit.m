@@ -28,10 +28,12 @@ else
     % Mac and Linux
     MLEPSETTINGS = struct(...
         'version', 2,...   % Version of the protocol
-        'program', 'runenergyplus',...   % Path to the program to run EnergyPlus
+        'program', '/Applications/EnergyPlus-8-1-0/runenergyplus',...   % Path to the program to run EnergyPlus
         'bcvtbDir', '/Users/truong/software/bcvtb',...   % Path to BCVTB installation
-        'execcmd', 'system'...   % Use Java to execute E+
+        'execcmd', 'java'...   % Use Java to execute E+
     );
 
-    MLEPSETTINGS.env = {};
+    MLEPSETTINGS.env = {...
+        {'ENERGYPLUS_DIR', '/Applications/EnergyPlus-8-1-0'},...  % Path to the EnergyPlus
+    };
 end

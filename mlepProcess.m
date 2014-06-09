@@ -121,6 +121,7 @@ classdef mlepProcess < handle
         end
         
         function packet = read(obj)
+            % packet = read(obj)
             % Read (synchronously) a packet from E+
             % It may fail if timeout is reached without input data.
             if obj.isRunning
@@ -131,6 +132,7 @@ classdef mlepProcess < handle
         end
         
         function [packet, success] = readAsync(obj)
+            % [packet, success] = readAsync(obj)
             % Read asynchronously a packet from E+
             % The function always returns immediately.
             % If there is no input data in the buffer, packet will be empty
