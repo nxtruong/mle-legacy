@@ -13,9 +13,10 @@
 %
 % This script is free software.
 %
-% (C) 2010-2011 by Truong Nghiem (nghiem@seas.upenn.edu)
+% (C) 2010-2014 by Truong Nghiem (nghiem@seas.upenn.edu)
 %
 % CHANGES:
+%   2014-08-26  Update to E+ 8.1.0.
 %   2012-04-23  Fix an error with E+ 7.0.0: Matlab must read data from E+
 %               before sending any data to E+.
 %   2011-07-13  Update to new version of MLE+ which uses mlepInit for
@@ -29,7 +30,8 @@ ep = mlepProcess;
 ep.arguments = {'SmOffPSZ', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3'};
 ep.acceptTimeout = 20000; % in milliseconds
 
-VERNUMBER = 2;  % version number of communication protocol (2 for E+ 6.0.0)
+VERNUMBER = 2;  % version number of communication protocol (2 as of
+                % E+ 8.1.0)
 
 
 %% Start EnergyPlus cosimulation
@@ -87,7 +89,7 @@ while kStep <= MAXSTEPS
     ep.write(mlepEncodeRealData(VERNUMBER, 0, (kStep-1)*deltaT, SP));    
 
     % Save to logdata
-    logdata(kStep, :) = [SP outputs];
+    logdata(kStep, :) = outputs;
     
     kStep = kStep + 1;
 end
@@ -105,7 +107,7 @@ end
 
 % Plot results
 plot([0:(kStep-1)]'*deltaT/3600, logdata);
-legend('Heat SP', 'Cool SP', 'Outdoor', 'Zone');
+legend('Outdoor', 'Zone', 'Heat SP', 'Cool SP');
 title('Temperatures');
 xlabel('Time (hour)');
 ylabel('Temperature (C)');
