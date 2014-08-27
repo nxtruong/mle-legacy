@@ -30,7 +30,7 @@ else
         'version', 2,...   % Version of the protocol
         'program', '/Applications/EnergyPlus-8-1-0/runenergyplus',...   % Path to the program to run EnergyPlus
         'bcvtbDir', '/Users/truong/software/bcvtb',...   % Path to BCVTB installation
-        'execcmd', 'java'...   % Use Java to execute E+
+        'execcmd', 'system'...   % Use Java to execute E+
     );
 
     MLEPSETTINGS.env = {...
