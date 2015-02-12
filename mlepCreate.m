@@ -13,7 +13,9 @@ function [serversock, simsock, status, msg, pid] = ...
 %
 %   Inputs:
 %       progname: a nonempty string which is the name of the external
-%                   program.
+%                   program; if it is empty, the program will not be called
+%                   but the socket is still created (e.g. the program runs
+%                   on another computer).
 %       arguments: a string or a cell array of strings which are the
 %                   arguments to the external program.
 %       workdir: a string which is the working directory of the simulation
@@ -160,51 +162,55 @@ end
 
 serversock.setSoTimeout(timeout);
 
-% Write socket config file if necessary (configfile ~= -1)
-if configfile ~= -1
-    fid = fopen(configfile, 'w');
-    if fid == -1
-        % error
-        serversock.close; serversock = [];
-        error('Error while creating socket config file: %s', ferror(fid));
-    end
+if ~isempty(progname)
     
-    % Write socket config to file
-    socket_config = [...
-        '<?xml version="1.0" encoding="ISO-8859-1"?>\n' ...
-        '<BCVTB-client>\n' ...
-        '<ipc>\n' ...
-        '<socket port="%d" hostname="%s"/>\n' ...
-        '</ipc>\n' ...
-        '</BCVTB-client>'];
-    fprintf(fid, socket_config, serversock.getLocalPort, hostname);
-    
-    [femsg, ferr] = ferror(fid);
-    if ferr ~= 0  % Error while writing config file
-        serversock.close; serversock = [];
+    % Write socket config file if necessary (configfile ~= -1)
+    if configfile ~= -1
+        fid = fopen(configfile, 'w');
+        if fid == -1
+            % error
+            serversock.close; serversock = [];
+            error('Error while creating socket config file: %s', ferror(fid));
+        end
+        
+        % Write socket config to file
+        socket_config = [...
+            '<?xml version="1.0" encoding="ISO-8859-1"?>\n' ...
+            '<BCVTB-client>\n' ...
+            '<ipc>\n' ...
+            '<socket port="%d" hostname="%s"/>\n' ...
+            '</ipc>\n' ...
+            '</BCVTB-client>'];
+        fprintf(fid, socket_config, serversock.getLocalPort, hostname);
+        
+        [femsg, ferr] = ferror(fid);
+        if ferr ~= 0  % Error while writing config file
+            serversock.close; serversock = [];
+            fclose(fid);
+            error('Error while writing socket config file: %s', femsg);
+        end
+        
         fclose(fid);
-        error('Error while writing socket config file: %s', femsg);
     end
     
-    fclose(fid);
-end
-
-% Create the external process
-try
-    switch execcmd
-        case 'java'
-            [status, pid] = startProcessJRE(progname, arguments, env, workdir);
-        otherwise
-            [status, pid] = startProcess(progname, arguments, env, workdir);
+    % Create the external process
+    try
+        switch execcmd
+            case 'java'
+                [status, pid] = startProcessJRE(progname, arguments, env, workdir);
+            otherwise
+                [status, pid] = startProcess(progname, arguments, env, workdir);
+        end
+        
+        if status ~= 0
+            error('Error while starting external co-simulation program.');
+        end
+    catch ErrObj
+        serversock.close; % serversock = [];
+        rethrow(ErrObj);
     end
     
-    if status ~= 0
-        error('Error while starting external co-simulation program.');
-    end
-catch ErrObj
-    serversock.close; % serversock = [];
-    rethrow(ErrObj);
-end
+end % if progname is not empty
 
 % Listen for the external program to connect
 try
@@ -274,7 +280,7 @@ if nargin >= 3
     end
 end
 
-[status, result] = system([cmd ' &']);
+[status, result] = system([cmd ' &>mlep.log &']);
 pid = 0;
 
 end
