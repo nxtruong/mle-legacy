@@ -5,9 +5,9 @@
 % Generally, this is only necessary on Windows machines.  On
 % Linux/MacOS, the default settings often work.
 %
-% (C) 2011 by Truong X. Nghiem (nghiem@seas.upenn.edu)
+% (C) 2015 by Truong X. Nghiem (truong.nghiem@gmail.com)
 
-% Last update: 2011-07-13 by Truong X. Nghiem
+% Last update: 2015-10-20 by Truong X. Nghiem
 
 global MLEPSETTINGS
 
@@ -24,16 +24,30 @@ if ispc
         {'ENERGYPLUS_DIR', 'C:\EnergyPlusV6-0-0'},...  % Path to the EnergyPlus
         {'PATH', 'C:\Program Files (x86)\Java\jre6\bin;C:\EnergyPlusV6-0-0'}...  % System path, should include E+ and JRE
     };
-else
-    % Mac and Linux
+elseif ismac
+    % Mac
     MLEPSETTINGS = struct(...
         'version', 2,...   % Version of the protocol
-        'program', '/Applications/EnergyPlus-8-1-0/runenergyplus',...   % Path to the program to run EnergyPlus
+        'program', '/Applications/EnergyPlus-8-4-0/runenergyplus',...   % Path to the program to run EnergyPlus
         'bcvtbDir', '/Users/truong/software/bcvtb',...   % Path to BCVTB installation
-        'execcmd', 'system'...   % Use Java to execute E+
+        'execcmd', 'system'...   % Use Java or the system command to execute E+
     );
 
     MLEPSETTINGS.env = {...
-        {'ENERGYPLUS_DIR', '/Applications/EnergyPlus-8-1-0'},...  % Path to the EnergyPlus
+        {'ENERGYPLUS_DIR', '/Applications/EnergyPlus-8-4-0'},...  % Path to the EnergyPlus
     };
+elseif isunix
+    % Unix - Linux
+    MLEPSETTINGS = struct(...
+        'version', 2,...   % Version of the protocol
+        'program', '/usr/bin/runenergyplus',...   % Path to the program to run EnergyPlus
+        'bcvtbDir', '/usr/local/bcvtb',...   % Path to BCVTB installation
+        'execcmd', 'system'...   % Use Java or the system command to execute E+
+    );
+
+    MLEPSETTINGS.env = {...
+        {'ENERGYPLUS_DIR', '/usr/local/EnergyPlus-8-4-0'},...  % Path to the EnergyPlus
+    };    
+else
+    error('Unsupported platform.');
 end
