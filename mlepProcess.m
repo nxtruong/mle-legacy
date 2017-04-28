@@ -64,11 +64,6 @@ classdef mlepProcess < handle
             % status = 0 --> success
             if obj.isRunning, return; end
             
-            % Check parameters
-            if isempty(obj.program)
-                error('Program name must be specified.');
-            end
-            
             % Call mlepCreate
             try
                 if ~isempty(obj.serverSocket)

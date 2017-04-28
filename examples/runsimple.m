@@ -16,6 +16,7 @@
 % (C) 2010-2014 by Truong Nghiem (nghiem@seas.upenn.edu)
 %
 % CHANGES:
+%   2015-10-20  Update to E+ 8.4.0.
 %   2014-08-26  Update to E+ 8.1.0.
 %   2012-04-23  Fix an error with E+ 7.0.0: Matlab must read data from E+
 %               before sending any data to E+.
@@ -29,6 +30,7 @@
 ep = mlepProcess;
 ep.arguments = {'SmOffPSZ', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3'};
 ep.acceptTimeout = 20000; % in milliseconds
+ep.program = '';    % E+ will be run separately from this script, e.g. in a terminal
 
 VERNUMBER = 2;  % version number of communication protocol (2 as of
                 % E+ 8.1.0)
@@ -45,7 +47,7 @@ end
 
 deltaT = 15*60;  % time step = 15 minutes
 kStep = 1;  % current simulation step
-MAXSTEPS = 4*24*4;  % max simulation time = 4 days
+MAXSTEPS = 7*24*4;  % max simulation time = 4 days
 
 TCRooLow = 22;  % Zone temperature is kept between TCRooLow & TCRooHi
 TCRooHi = 26;
