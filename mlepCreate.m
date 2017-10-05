@@ -141,7 +141,7 @@ end
 if isnumeric(port)
     % If any error happens, this function will be interrupted
     if ni >= 6 && ~isempty(host)
-        serversock = java.net.ServerSocket(port, 0, host);
+        serversock = java.net.ServerSocket(port, 0, java.net.InetAddress.getByName(host));
         hostname = host;
     else
         serversock = java.net.ServerSocket(port);
@@ -162,37 +162,39 @@ end
 
 serversock.setSoTimeout(timeout);
 
-% Write socket config file if necessary (configfile ~= -1)
-if configfile ~= -1
-    fid = fopen(configfile, 'w');
-    if fid == -1
-        % error
-        serversock.close; serversock = [];
-        error('Error while creating socket config file: %s', ferror(fid));
-    end
-    
-    % Write socket config to file
-    socket_config = [...
-        '<?xml version="1.0" encoding="ISO-8859-1"?>\n' ...
-        '<BCVTB-client>\n' ...
-        '<ipc>\n' ...
-        '<socket port="%d" hostname="%s"/>\n' ...
-        '</ipc>\n' ...
-        '</BCVTB-client>'];
-    fprintf(fid, socket_config, serversock.getLocalPort, hostname);
-    
-    [femsg, ferr] = ferror(fid);
-    if ferr ~= 0  % Error while writing config file
-        serversock.close; serversock = [];
+if isempty(progname)
+    status = 0;
+    pid = -1;
+else
+    % Write socket config file if necessary (configfile ~= -1)
+    if configfile ~= -1
+        fid = fopen(configfile, 'w');
+        if fid == -1
+            % error
+            serversock.close; serversock = [];
+            error('Error while creating socket config file: %s', ferror(fid));
+        end
+        
+        % Write socket config to file
+        socket_config = [...
+            '<?xml version="1.0" encoding="ISO-8859-1"?>\n' ...
+            '<BCVTB-client>\n' ...
+            '<ipc>\n' ...
+            '<socket port="%d" hostname="%s"/>\n' ...
+            '</ipc>\n' ...
+            '</BCVTB-client>'];
+        fprintf(fid, socket_config, serversock.getLocalPort, hostname);
+        
+        [femsg, ferr] = ferror(fid);
+        if ferr ~= 0  % Error while writing config file
+            serversock.close; serversock = [];
+            fclose(fid);
+            error('Error while writing socket config file: %s', femsg);
+        end
+        
         fclose(fid);
-        error('Error while writing socket config file: %s', femsg);
     end
     
-    fclose(fid);
-end
-
-if ~isempty(progname)
-    % if progname is not empty
     % Create the external process
     try
         switch execcmd
@@ -209,11 +211,8 @@ if ~isempty(progname)
         serversock.close; % serversock = [];
         rethrow(ErrObj);
     end
-else
-    % Else, the program must be started externally
-    status = 0;
-    pid = 0;
-end
+    
+end % if progname is not empty
 
 % Listen for the external program to connect
 try
